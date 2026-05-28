@@ -43,6 +43,12 @@ impl SchemaBuild {
 
         let generated = self.generated_schema_file();
         self.assert_generated_schema_path(&generated);
+        if env::var_os("HORIZON_REGENERATE_SCHEMA").is_some() {
+            let checked_in = CheckedInSchemaSource::new(&self.crate_root, &generated);
+            fs::write(checked_in.path(), checked_in.expected_source())
+                .expect("write regenerated schema source");
+            return;
+        }
         self.assert_checked_in_schema_is_fresh(&generated);
     }
 

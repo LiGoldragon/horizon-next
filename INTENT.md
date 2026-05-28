@@ -23,6 +23,20 @@ bare name. The positional, collection-name-first forms — `Vec <element>`,
 `KeyValueMap <key> <value>`, and `Option <inner>` — express the collections at
 reference positions.*
 
+Psyche intent (2026-05-28, records 1054 / 1038 / 1039 / 1028 / 1030 / 1052,
+plus report /42 D2/D3/D4):
+
+*The schema root plane surface is a single DATA-CARRYING enum named `Plane`
+whose `Signal` / `Nexus` / `Sema` variants carry the actual plane messages, so
+runtime code matches DIRECTLY on the plane — not a thin kind tag beside a
+separate envelope (record 1052 names that shape wrong). The auto-created origin
+route (records 1038/1039) is folded onto the `Plane` root, minted at ingress,
+threaded through every hop, and echoed back. The three trait-ordered engines
+(record 1028) must ACTUALLY DRIVE a running chain (record 1030) — Signal
+validates and pushes to Nexus, Nexus executes and pushes to Sema, Sema applies
+and returns the reply — not be dead emitted scaffolding. Pure types-only
+modules carry no vestigial signal plane (report /42 D3).*
+
 ## What this repository is
 
 A two-crate workspace. `horizon-core` is the shared-types crate that declares

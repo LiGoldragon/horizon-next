@@ -22,7 +22,8 @@ pub mod schema {
 use std::collections::BTreeMap;
 
 use schema::horizon::{
-    ClusterProposal, NodeConfig, NodeName, NodeProposal, Output, ProjectionError, RejectionReason,
+    ClusterProposal, Input, NexusEngine, NodeConfig, NodeName, NodeProposal, Output, Plane,
+    ProjectionError, RejectionReason, SemaEngine, SignalEngine,
 };
 
 use horizon_core::schema::magnitude::Magnitude;
@@ -73,6 +74,157 @@ impl NodeProposal {
             trust: self.trust.clone(),
             services,
             cache: cluster.cache.as_ref().map(|cache| cache.0.clone()),
+        }
+    }
+}
+
+// The running three-engine chain (records 1028/1030/1054). The three
+// trait-ordered engines below implement the schema-emitted
+// `SignalEngine` / `NexusEngine` / `SemaEngine`, each matching directly
+// on the data-carrying `Plane` enum (record 1054 — no separate kind tag
+// beside an envelope, record 1052) and threading the origin route minted
+// at ingress (records 1038/1039) through every hop. `Plane::drive` (the
+// schema-emitted chain) wires them: Signal validates and pushes to
+// Nexus, Nexus executes the projection and pushes to Sema, Sema applies
+// the reply to durable state and returns the reply Plane echoing the
+// origin route. This is a real chain that drives, not emitted-but-dead
+// scaffolding.
+
+/// Signal-plane engine error: the ingress request was structurally
+/// inadmissible before any projection ran.
+#[derive(Debug, PartialEq, Eq)]
+pub enum SignalRejection {
+    NotAnIngressSignal,
+}
+
+/// Nexus-plane engine error: the chain reached Nexus on the wrong plane.
+#[derive(Debug, PartialEq, Eq)]
+pub enum NexusFault {
+    NotAdmittedToNexus,
+}
+
+/// Sema-plane engine error: the chain reached Sema on the wrong plane.
+#[derive(Debug, PartialEq, Eq)]
+pub enum SemaFault {
+    NotHandedToSema,
+}
+
+/// The Signal engine. It owns no durable state — it is the admission
+/// gate — but it carries its configured ingress policy as data so the
+/// behavior lives on a non-zero-sized type rather than a free function.
+pub struct SignalGate {
+    reject_empty_cluster: bool,
+}
+
+impl SignalGate {
+    pub fn new() -> Self {
+        Self {
+            reject_empty_cluster: true,
+        }
+    }
+}
+
+impl Default for SignalGate {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl SignalEngine for SignalGate {
+    type Error = SignalRejection;
+
+    /// Validate the ingress `Plane::Signal(route, Input::Project(..))`
+    /// and admit it onto the Nexus plane, carrying the same origin route.
+    fn admit(&self, signal: Plane) -> Result<Plane, Self::Error> {
+        match signal {
+            Plane::Signal(route, Input::Project(proposal)) => {
+                if self.reject_empty_cluster && proposal.nodes.is_empty() {
+                    return Err(SignalRejection::NotAnIngressSignal);
+                }
+                Ok(Plane::Nexus(route, Input::Project(proposal)))
+            }
+            _ => Err(SignalRejection::NotAnIngressSignal),
+        }
+    }
+}
+
+/// The Nexus engine. It executes the admitted request — running the
+/// projection that is itself a method on the schema-emitted
+/// `ClusterProposal` — and hands the reply onto the Sema plane.
+pub struct ProjectionNexus;
+
+impl ProjectionNexus {
+    pub fn new() -> Self {
+        Self
+    }
+}
+
+impl Default for ProjectionNexus {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl NexusEngine for ProjectionNexus {
+    type Error = NexusFault;
+
+    fn execute(&self, nexus: Plane) -> Result<Plane, Self::Error> {
+        match nexus {
+            Plane::Nexus(route, Input::Project(proposal)) => {
+                let output = proposal.project();
+                Ok(Plane::Sema(route, output))
+            }
+            _ => Err(NexusFault::NotAdmittedToNexus),
+        }
+    }
+}
+
+/// The Sema engine. It owns the durable projection state — the map of
+/// the last projected node configurations per origin route — applies the
+/// reply to that state, and returns the reply Plane to be echoed back to
+/// the caller. The state map is the data the engine's behavior reads and
+/// writes, so the engine is a real data-bearing noun.
+pub struct ProjectionSema {
+    last_projection: BTreeMap<NodeName, NodeConfig>,
+    applied_count: usize,
+}
+
+impl ProjectionSema {
+    pub fn new() -> Self {
+        Self {
+            last_projection: BTreeMap::new(),
+            applied_count: 0,
+        }
+    }
+
+    pub fn last_projection(&self) -> &BTreeMap<NodeName, NodeConfig> {
+        &self.last_projection
+    }
+
+    pub fn applied_count(&self) -> usize {
+        self.applied_count
+    }
+}
+
+impl Default for ProjectionSema {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl SemaEngine for ProjectionSema {
+    type Error = SemaFault;
+
+    fn apply(&mut self, sema: Plane) -> Result<Plane, Self::Error> {
+        match sema {
+            Plane::Sema(route, output) => {
+                if let Output::Projected(configs) = &output {
+                    self.last_projection = configs.clone();
+                    self.applied_count += 1;
+                }
+                Ok(Plane::Sema(route, output))
+            }
+            _ => Err(SemaFault::NotHandedToSema),
         }
     }
 }

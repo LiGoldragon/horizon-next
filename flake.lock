@@ -1,0 +1,170 @@
+{
+  "nodes": {
+    "crane": {
+      "locked": {
+        "lastModified": 1779130139,
+        "narHash": "sha256-BLrtr42azquO7MdGFU5a7KiMl3YpFlTeIXqy1fT5GlQ=",
+        "owner": "ipetkov",
+        "repo": "crane",
+        "rev": "edb38893982a3338972bb4a2ec7ce7c29ba10fd9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ipetkov",
+        "repo": "crane",
+        "type": "github"
+      }
+    },
+    "fenix": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "rust-analyzer-src": "rust-analyzer-src"
+      },
+      "locked": {
+        "lastModified": 1779876442,
+        "narHash": "sha256-O25HomVNmdROO13PEQ3Ran8Hq5EsyLmVn8Gb8JvJtJE=",
+        "owner": "nix-community",
+        "repo": "fenix",
+        "rev": "2eff81fc84390a35e1565395ae945d9394856824",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "fenix",
+        "type": "github"
+      }
+    },
+    "flake-utils": {
+      "inputs": {
+        "systems": "systems"
+      },
+      "locked": {
+        "lastModified": 1731533236,
+        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1779877693,
+        "narHash": "sha256-NOF9NAREhxr50bbBfVcVOq+ArCMSoe8dP79Pk2uyARk=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "4100e830e085863741bc69b156ec4ccd53ab5be0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixpkgs-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nota-next-source": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1779888215,
+        "narHash": "sha256-UEVh08pJxj6Bfm6aTrhdYTIpUnNvuhnQCfqEBSrSXEI=",
+        "owner": "LiGoldragon",
+        "repo": "nota-next",
+        "rev": "5e063042fffe5c58e0345ccadbadf863b07859c1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "LiGoldragon",
+        "repo": "nota-next",
+        "rev": "5e063042fffe5c58e0345ccadbadf863b07859c1",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "crane": "crane",
+        "fenix": "fenix",
+        "flake-utils": "flake-utils",
+        "nixpkgs": "nixpkgs",
+        "nota-next-source": "nota-next-source",
+        "schema-next-source": "schema-next-source",
+        "schema-rust-next-source": "schema-rust-next-source"
+      }
+    },
+    "rust-analyzer-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1779827300,
+        "narHash": "sha256-J6pHxKoZzWCrAvOVInwBcYYWix/NWwM10Ad+i29Qc5s=",
+        "owner": "rust-lang",
+        "repo": "rust-analyzer",
+        "rev": "c3af07ad84d68adc5e652e86f0c20009caa29014",
+        "type": "github"
+      },
+      "original": {
+        "owner": "rust-lang",
+        "ref": "nightly",
+        "repo": "rust-analyzer",
+        "type": "github"
+      }
+    },
+    "schema-next-source": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1779961514,
+        "narHash": "sha256-Q9LE8x7wAJa20q/OveUmYo0oZ283Jr0iHGrlIcoji0U=",
+        "owner": "LiGoldragon",
+        "repo": "schema-next",
+        "rev": "f73274f698a6dc4505ede60fe8f3445b8eeea630",
+        "type": "github"
+      },
+      "original": {
+        "owner": "LiGoldragon",
+        "ref": "collections-horizon-2026-05-28",
+        "repo": "schema-next",
+        "type": "github"
+      }
+    },
+    "schema-rust-next-source": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1779961606,
+        "narHash": "sha256-nHb7ZSgxVG/+p7tp7NqOHGN3MljllunTBGW7DQBaKgU=",
+        "owner": "LiGoldragon",
+        "repo": "schema-rust-next",
+        "rev": "419db039ccafd8cae0170e0c20b56250a95d12e5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "LiGoldragon",
+        "ref": "collections-horizon-2026-05-28",
+        "repo": "schema-rust-next",
+        "type": "github"
+      }
+    },
+    "systems": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
+        "type": "github"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}

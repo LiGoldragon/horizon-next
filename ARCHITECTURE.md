@@ -74,14 +74,49 @@ representative slice of the real `horizon-rs` `ClusterProposal`:
   `ClusterTrust.cluster`, `NodeProposal.trust`, `NodeConfig.trust`.
 - **Four-position document** — imports + Input + Output + namespace.
 
-## Runtime-shape note (open)
+## The Plane runtime surface + the running three-engine chain
 
-Declaring `Input`/`Output` makes Horizon a SIGNAL-leaning component: the
-projection is `Project -> Projected`. This is the shape the concept
-demonstrates. It is not the only option — a pure-library Horizon would want a
-types-only module (the `/39` gap), and a full triad would add a Sema plane for
-durable cluster state. The concept shows the datatypes generate regardless of
-which runtime shape is chosen; the choice stays open.
+Beyond datatype generation, the concept now demonstrates the runtime model
+(records 1054 / 1038 / 1039 / 1028 / 1030):
+
+- **`Plane` — the data-carrying plane surface (record 1054).** The emitter
+  generates a single enum `Plane` whose `Signal` / `Nexus` / `Sema` variants
+  CARRY the actual plane messages. Runtime code matches DIRECTLY on the plane —
+  it is NOT a thin kind tag beside a separate envelope (record 1052 names that
+  shape wrong). For Horizon: `Signal(OriginRoute, Input)` is the ingress,
+  `Sema(OriginRoute, Output)` is the reply.
+- **OriginRoute folded onto the root (records 1038/1039).** The auto-created
+  origin route is the leading tuple element of each `Plane` variant. It is
+  minted at ingress (`Plane::at_ingress`), threaded through every engine hop,
+  and echoed back on the reply `Plane`. It also rides on `NexusMail` /
+  `MessageSent` / `MessageProcessed`.
+- **The three trait-ordered engines (record 1028).** `SignalEngine::admit`,
+  `NexusEngine::execute`, `SemaEngine::apply` — each `Plane -> Plane`. The
+  concept's `src/lib.rs` implements them on real data-bearing nouns:
+  `SignalGate` (admission policy), `ProjectionNexus` (runs `ClusterProposal::
+  project`), `ProjectionSema` (owns the durable last-projection map).
+- **`Plane::drive` — the RUNNING chain (record 1030).** It threads a request
+  Signal → Nexus → Sema and returns the reply, echoing the origin route. This
+  is a chain that ACTUALLY DRIVES, not emitted-but-dead scaffolding.
+  `tests/three_engine_chain.rs` pushes a real Horizon projection request end to
+  end through all three engines and asserts the projected output + the echoed
+  route; a second test drives the engines one crossing at a time so each plane
+  boundary is visible (the `skills/testing.md` per-plane-chain-typing rule).
+
+So Horizon's runtime shape, left open by record 1050, is here shown as a
+component whose Signal/Nexus/Sema planes are one coherent `Plane` enum driven by
+the three engines.
+
+## Types-only `horizon-core` (no vestigial signal plane)
+
+`horizon-core` is now a pure TYPES-ONLY module (report /42 D3). Its
+`schema/magnitude.schema` is the two-position document `{} { Magnitude (...) }`
+— Imports + Namespace, NO `Input` / `Output`. The emitted `magnitude.rs`
+therefore carries ONLY the `Magnitude` type + its NOTA codec; it has no `Plane`,
+no `OriginRoute`, no `NexusMail`, no runtime floor at all (dropped from ~520 to
+~150 lines). The generic runtime floor lives once in the `horizon` component and
+is no longer duplicated into the imported type library — the concrete instance
+of report /42's D2.
 
 ## The Nix witness
 

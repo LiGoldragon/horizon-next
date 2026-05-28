@@ -9,8 +9,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     crane.url = "github:ipetkov/crane";
+    # Pinned to the exact nota-next commit schema-next + schema-rust-next
+    # build against (record 1057 alignment): 5e063042 exposes the two-
+    # level StructureHeader without the later overflow-marking change that
+    # diverges schema-next's structure-header test. All three repos pin
+    # this commit so cargo's lock unification is consistent in Nix.
     nota-next-source = {
-      url = "github:LiGoldragon/nota-next";
+      url = "github:LiGoldragon/nota-next/5e063042fffe5c58e0345ccadbadf863b07859c1";
       flake = false;
     };
     schema-next-source = {
@@ -127,6 +132,56 @@
             grep -R "pub fn project(&self) -> Output" ${src}/horizon/src/lib.rs >/dev/null
             grep -R "projection_drops_distrusted_nodes_and_keeps_trusted_ones" ${src}/horizon/tests/projection.rs >/dev/null
             grep -R "cluster_proposal_round_trips_through_nota" ${src}/horizon/tests/projection.rs >/dev/null
+            touch $out
+          '';
+          # The record-1054 plane surface witness: the emitted Plane is a
+          # single DATA-CARRYING enum whose variants carry the actual
+          # plane messages with the auto-created origin route (records
+          # 1038/1039) folded onto the root as the leading tuple element —
+          # NOT a thin kind tag beside a separate envelope (record 1052).
+          plane-surface-data-carrying = pkgs.runCommand "horizon-next-plane-surface-data-carrying" { } ''
+            grep -R "pub enum Plane {" ${src}/horizon/src/schema/horizon.rs >/dev/null
+            grep -R "Signal(OriginRoute, Input)," ${src}/horizon/src/schema/horizon.rs >/dev/null
+            grep -R "Nexus(OriginRoute, Input)," ${src}/horizon/src/schema/horizon.rs >/dev/null
+            grep -R "Sema(OriginRoute, Output)," ${src}/horizon/src/schema/horizon.rs >/dev/null
+            # The origin route is auto-created runtime substrate (1038/1039).
+            grep -R "pub struct OriginRoute(pub Integer);" ${src}/horizon/src/schema/horizon.rs >/dev/null
+            touch $out
+          '';
+          # The running three-engine chain witness (records 1028/1030):
+          # the three trait-ordered engines and Plane::drive are emitted,
+          # and the consumer wires + drives them with a test that pushes a
+          # real Horizon projection request end to end through all three.
+          running-three-engine-chain = pkgs.runCommand "horizon-next-running-three-engine-chain" { } ''
+            # The three engines are emitted as Plane -> Plane traits.
+            grep -R "pub trait SignalEngine" ${src}/horizon/src/schema/horizon.rs >/dev/null
+            grep -R "pub trait NexusEngine" ${src}/horizon/src/schema/horizon.rs >/dev/null
+            grep -R "pub trait SemaEngine" ${src}/horizon/src/schema/horizon.rs >/dev/null
+            grep -R "pub fn drive<Signal, Nexus, Sema>(" ${src}/horizon/src/schema/horizon.rs >/dev/null
+            # The consumer implements the three engines on real nouns.
+            grep -R "impl SignalEngine for SignalGate" ${src}/horizon/src/lib.rs >/dev/null
+            grep -R "impl NexusEngine for ProjectionNexus" ${src}/horizon/src/lib.rs >/dev/null
+            grep -R "impl SemaEngine for ProjectionSema" ${src}/horizon/src/lib.rs >/dev/null
+            # The chain-driving test pushes a request through all three.
+            grep -R "request_drives_signal_then_nexus_then_sema_and_echoes_origin_route" ${src}/horizon/tests/three_engine_chain.rs >/dev/null
+            grep -R "each_plane_crossing_is_visible_and_typed" ${src}/horizon/tests/three_engine_chain.rs >/dev/null
+            touch $out
+          '';
+          # The types-only-module witness (report /42 D3): horizon-core is
+          # a pure types-only module — its schema is Imports + Namespace
+          # with NO signal plane, and its emitted Rust carries NO runtime
+          # floor (no Plane, no OriginRoute, no NexusMail). The floor lives
+          # once in the horizon component, not duplicated into the type
+          # library.
+          types-only-core-has-no-runtime-floor = pkgs.runCommand "horizon-next-types-only-core-has-no-runtime-floor" { } ''
+            # The schema declares no signal plane (two-position document).
+            ! grep -R "(Input" ${src}/core/schema/magnitude.schema
+            ! grep -R "(Output" ${src}/core/schema/magnitude.schema
+            # The emitted core carries the type, but none of the floor.
+            grep -R "pub enum Magnitude" ${src}/core/src/schema/magnitude.rs >/dev/null
+            ! grep -R "pub enum Plane" ${src}/core/src/schema/magnitude.rs
+            ! grep -R "pub struct OriginRoute" ${src}/core/src/schema/magnitude.rs
+            ! grep -R "pub struct NexusMail" ${src}/core/src/schema/magnitude.rs
             touch $out
           '';
           # Build scripts and library code carry no module-level free

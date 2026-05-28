@@ -28,7 +28,13 @@ impl SchemaBuild {
         println!("cargo:rerun-if-changed=src/schema/magnitude.rs");
 
         let generated = self.generated_module("magnitude");
-        self.assert_checked_in_schema_is_fresh(&generated);
+        if env::var_os("HORIZON_REGENERATE_SCHEMA").is_some() {
+            let checked_in = CheckedInSchemaSource::new(&self.crate_root, &generated);
+            fs::write(checked_in.path(), checked_in.expected_source())
+                .expect("write regenerated schema source");
+        } else {
+            self.assert_checked_in_schema_is_fresh(&generated);
+        }
         self.advertise_schema_directory();
     }
 
