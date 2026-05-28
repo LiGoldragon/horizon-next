@@ -1,0 +1,9 @@
+[workspace]
+resolver = "2"
+members = ["core", "horizon"]
+
+[workspace.dependencies]
+nota-next = { git = "https://github.com/LiGoldragon/nota-next.git", branch = "main" }
+schema-next = { git = "https://github.com/LiGoldragon/schema-next.git", branch = "collections-horizon-2026-05-28" }
+schema-rust-next = { git = "https://github.com/LiGoldragon/schema-rust-next.git", branch = "collections-horizon-2026-05-28" }
+rkyv = { version = "0.8", default-features = false, features = ["std", "bytecheck", "little_endian", "pointer_width_32", "unaligned"] }

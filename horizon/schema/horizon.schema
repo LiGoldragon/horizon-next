@@ -1,0 +1,16 @@
+{ Magnitude horizon-core:magnitude:Magnitude }
+(Input ((Project ClusterProposal)))
+(Output ((Projected (KeyValueMap NodeName NodeConfig)) (Rejected ProjectionError)))
+{
+  NodeName [Text]
+  ServiceName [Text]
+  CacheUrl [Text]
+  RejectionReason [Text]
+  NodeRole (Center Edge Builder)
+  ClusterTrust [(cluster Magnitude)]
+  NodeProposal [(role NodeRole) (trust Magnitude) (services (Vec ServiceName))]
+  BinaryCache [(url CacheUrl)]
+  ClusterProposal [(nodes (KeyValueMap NodeName NodeProposal)) (trust ClusterTrust) (cache (Option BinaryCache)) (cluster_services (Vec ServiceName))]
+  NodeConfig [(role NodeRole) (trust Magnitude) (services (Vec ServiceName)) (cache (Option CacheUrl))]
+  ProjectionError [(reason RejectionReason)]
+}

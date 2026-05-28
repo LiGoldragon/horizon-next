@@ -1,0 +1,6 @@
+{}
+(Input ((Rank Magnitude)))
+(Output ((Ranked Magnitude)))
+{
+  Magnitude (Zero Min Low Medium High Max)
+}

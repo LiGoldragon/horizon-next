@@ -1,0 +1,29 @@
+[package]
+name         = "horizon-next"
+version      = "0.1.0"
+edition      = "2024"
+rust-version = "1.85"
+license      = "MIT OR Apache-2.0"
+repository   = "https://github.com/LiGoldragon/horizon-next"
+description  = "Horizon-as-schema-driven-component concept — cluster proposal projection from a pure schema with collections + a cross-crate import."
+publish      = false
+build        = "build.rs"
+
+[lib]
+name = "horizon_next"
+path = "src/lib.rs"
+
+[dependencies]
+horizon-core = { path = "../core" }
+nota-next    = { workspace = true }
+rkyv         = { workspace = true }
+
+[build-dependencies]
+horizon-core     = { path = "../core" }
+schema-next      = { workspace = true }
+schema-rust-next = { workspace = true }
+
+[lints.rust]
+unsafe_code = "forbid"
+unused      = { level = "warn", priority = -1 }
+dead_code   = "warn"
